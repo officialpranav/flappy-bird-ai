@@ -42,14 +42,14 @@ def train_ai(genomes, config):
                 else:
                     next_pipe = game.pipe2
             
-            output = net.activate((birds[i].y, birds[i].dy, next_pipe.x, next_pipe.y))
-            decision = output.index(max(output))
-            if decision == 0:
+            output = net.activate((birds[i].dy, next_pipe.x, birds[i].y - next_pipe.y))
+            decision = output[0]
+            if decision > 0.5:
                 birds[i].jump()
         
         game.loop()     
         game.draw()
-        MAX = 150
+        MAX = 50
         if game.game_over or game.score == MAX:
             for i, bird in enumerate(birds):
                 if not bird.game_over:
@@ -65,14 +65,14 @@ def eval_genomes(genomes, config):
     train_ai(genomes, config)
     
 def run_neat(config):
-    # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-45 (config-1)')
+    # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-2')
     p = neat.Population(config)
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
     p.add_reporter(neat.Checkpointer(1))
 
-    winner = p.run(eval_genomes, 1)
+    winner = p.run(eval_genomes, 3)
     print(winner)
     with open("best.pickle", "wb") as f:
         pickle.dump(winner, f)
@@ -105,9 +105,9 @@ def test_ai(config):
             else:
                 next_pipe = game.pipe2
         
-        output = net.activate((bird.y, bird.dy, next_pipe.x, next_pipe.y))
-        decision = output.index(max(output))
-        if decision == 0:
+        output = net.activate((bird.dy, next_pipe.x, bird.y - next_pipe.y))
+        decision = output[0]
+        if decision > 0.5:
             bird.jump()
         game.loop()     
         game.draw()
